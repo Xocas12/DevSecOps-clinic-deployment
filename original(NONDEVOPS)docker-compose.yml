@@ -19,3 +19,5 @@ services:
       - POSTGRES_PASSWORD=petclinic
       - POSTGRES_USER=petclinic
       - POSTGRES_DB=petclinic
+#as the name suggests this is the original .yaml file and as such doesnt contain our devops infra
+#dont get confused
