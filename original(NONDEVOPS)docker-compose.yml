@@ -21,3 +21,5 @@ services:
       - POSTGRES_DB=petclinic
 #as the name suggests this is the original .yaml file and as such doesnt contain our devops infra
 #dont get confused
+
+#do we need to update this in any way????
