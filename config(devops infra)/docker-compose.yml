@@ -17,6 +17,16 @@ volumes:
   zap_data:
 
 services:
+  pet_clinic:
+    build:
+      context: ..
+      target: pet_clinic
+    container_name: pet_clinic-pet_clinic
+    ports:
+      8080:
+    networks:
+      - devops-network
+
   jenkins:
     image: jenkins/jenkins:lts
     container_name: jenkins
