@@ -1,4 +1,4 @@
-version: '3.8'
+# version: '3.8' # It sends a warning when written.
 
 networks:
   devops-network:
@@ -17,16 +17,6 @@ volumes:
   zap_data:
 
 services:
-  pet_clinic:
-    build:
-      context: ..
-      target: pet_clinic
-    container_name: pet_clinic-pet_clinic
-    ports:
-      8080:
-    networks:
-      - devops-network
-
   jenkins:
     image: jenkins/jenkins:lts
     container_name: jenkins
@@ -75,7 +65,7 @@ services:
       - devops-network
 
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:latest
     container_name: prometheus
     ports:
       - "9090:9090"
@@ -99,12 +89,12 @@ services:
       - devops-network
 
   zap:
-    image: owasp/zap2docker-stable
+    image: zaproxy/zap-stable
     container_name: zap
     ports:
       - "8090:8090"
     volumes:
       - zap_data:/zap/wrk
-    command: zap-webswing.sh
+    command: zap-x.sh
     networks:
       - devops-network
