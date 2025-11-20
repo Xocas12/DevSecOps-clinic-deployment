@@ -1,0 +1,89 @@
+---
+- name: Deploy Spring PetClinic to Production Server
+  hosts: production
+  become: yes
+  vars:
+    app_name: spring-petclinic
+    app_port: 8080
+    app_user: petclinic
+    app_dir: /opt/{{ app_name }}
+    jar_file: "{{ lookup('fileglob', '../build/libs/*.jar') | default(lookup('fileglob', '../target/*.jar')) }}"
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Install Java 25
+      apt:
+        name: openjdk-21-jdk
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Create application user
+      user:
+        name: "{{ app_user }}"
+        system: yes
+        shell: /bin/bash
+        home: "{{ app_dir }}"
+        createhome: yes
+
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: '0755'
+
+    - name: Stop existing application
+      systemd:
+        name: "{{ app_name }}"
+        state: stopped
+      ignore_errors: yes
+
+    - name: Copy application JAR
+      copy:
+        src: "{{ jar_file }}"
+        dest: "{{ app_dir }}/{{ app_name }}.jar"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: '0755'
+
+    - name: Create systemd service file
+      template:
+        src: petclinic.service.j2
+        dest: /etc/systemd/system/{{ app_name }}.service
+        mode: '0644'
+      notify: Reload systemd
+
+    - name: Enable and start application service
+      systemd:
+        name: "{{ app_name }}"
+        enabled: yes
+        state: started
+        daemon_reload: yes
+
+    - name: Wait for application to start
+      wait_for:
+        port: "{{ app_port }}"
+        delay: 5
+        timeout: 60
+
+    - name: Verify application is running
+      uri:
+        url: "http://localhost:{{ app_port }}"
+        status_code: 200
+      register: app_health
+      retries: 5
+      delay: 3
+
+    - name: Display deployment status
+      debug:
+        msg: "Spring PetClinic deployed successfully and is running on port {{ app_port }}"
+
+  handlers:
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
