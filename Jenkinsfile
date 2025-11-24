@@ -170,8 +170,8 @@ pipeline {
                     fi
                     echo "Prometheus endpoint is working!"
                    """
+         }
     }
-}
 
 
         stage('Deploy to Production') {
