@@ -158,7 +158,21 @@ pipeline {
                     reportTitles: 'ZAP Security Scan'
                 ])
             }
-        }
+        } 
+	stage('Prometheus Endpoint Check') {
+    	     steps {
+        	echo 'Checking Prometheus metrics endpoint...'
+        	sh """
+             	    STATUS=\$(curl -o /dev/null -s -w "%{http_code}" http://localhost:8080/prometheus)
+                    if [ "\$STATUS" -ne 200 ]; then
+                    echo "Prometheus endpoint not available"
+                    exit 1
+                    fi
+                    echo "Prometheus endpoint is working!"
+                   """
+    }
+}
+
 
         stage('Deploy to Production') {
             steps {
